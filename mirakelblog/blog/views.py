@@ -1,4 +1,4 @@
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage, Paginator
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
 
@@ -10,7 +10,10 @@ def post_list(request: HttpRequest):
     all_posts = Post.published.all()
     paginator = Paginator(all_posts, 5)
     page_number = request.GET.get("page", 1)
-    posts_to_display = paginator.page(page_number)
+    try:
+        posts_to_display = paginator.page(page_number)
+    except EmptyPage:
+        posts_to_display = paginator.page(paginator.num_pages)
     return render(request, "blog/post/list.html", {"posts": posts_to_display})
 
 
