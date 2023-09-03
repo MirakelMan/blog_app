@@ -2,12 +2,13 @@ from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 
 from mirakelblog.settings import EMAIL_HOST_USER
 
-from .forms import EmailPostForm
-from .models import Post
+from .forms import CommentForm, EmailPostForm
+from .models import Comment, Post
 
 
 class PostListView(ListView):
@@ -65,4 +66,20 @@ def post_share(request: HttpRequest, post_id: int):
         form = EmailPostForm()
     return render(
         request, "blog/post/share.html", {"post": post, "form": form, "sent": sent}
+    )
+
+
+@require_POST
+def post_comment(request: HttpRequest, post_id: int):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        comment: CommentForm = form.save(commit=False)
+        comment.post = post
+        comment.save()
+    return render(
+        request,
+        "blog/post/comment.html",
+        {"post": post, "form": form, "comment": comment},
     )
