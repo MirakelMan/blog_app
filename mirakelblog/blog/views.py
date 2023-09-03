@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
+from taggit.models import Tag
 
 from mirakelblog.settings import EMAIL_HOST_USER
 
@@ -19,8 +20,12 @@ class PostListView(ListView):
 
 
 # Create your views here.
-def post_list(request: HttpRequest):
+def post_list(request: HttpRequest, tag_slug=None):
     all_posts = Post.published.all()
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        all_posts = all_posts.filter(tags__in=[tag])
     paginator = Paginator(all_posts, 5)
     page_number = request.GET.get("page", 1)
     try:
@@ -29,7 +34,9 @@ def post_list(request: HttpRequest):
         posts_to_display = paginator.page(1)
     except EmptyPage:
         posts_to_display = paginator.page(paginator.num_pages)
-    return render(request, "blog/post/list.html", {"posts": posts_to_display})
+    return render(
+        request, "blog/post/list.html", {"posts": posts_to_display, "tag": tag}
+    )
 
 
 def post_detail(request: HttpRequest, year, month, day, post):
