@@ -76,8 +76,8 @@ def post_share(request: HttpRequest, post_id: int):
 
 
 @require_POST
-def post_comment(request: HttpRequest, post_id: int):
-    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+def post_comment(request: HttpRequest, id: int):
+    post = get_object_or_404(Post, id=id, status=Post.Status.PUBLISHED)
     comment = None
     form = CommentForm(data=request.POST)
     if form.is_valid():
