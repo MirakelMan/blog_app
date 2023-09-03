@@ -54,7 +54,12 @@ def post_share(request: HttpRequest, post_id: int):
             subject = f"{cd['name']} recommends you read {post.title}."
             message = f"""Read {post.title} at {post_url} \n\n
             {cd['name']}\'s comments: {cd['comments']}"""
-            send_mail(subject, message, EMAIL_HOST_USER, cd["to"])
+            send_mail(
+                subject,
+                message,
+                EMAIL_HOST_USER,
+                [cd["to"]],
+            )
             sent = True
     else:
         form = EmailPostForm()
